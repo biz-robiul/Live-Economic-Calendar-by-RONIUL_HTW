@@ -1,0 +1,37 @@
+name: Update Forex Factory Data
+
+# কখন এই স্ক্রিপ্ট রান করবে তার নির্দেশ
+on:
+  schedule:
+    - cron: '0 0 * * 0' # প্রতি রবিবার রাত ১২টায় স্বয়ংক্রিয়ভাবে রান করবে (UTC টাইম)
+  workflow_dispatch: # এই লাইনের কারণে আপনি গিটহাবে একটি "Run workflow" বাটন পাবেন (ফোনের জন্য)
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # ফাইলে ডেটা সেভ করার পারমিশন
+      
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+        
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+          
+      - name: Install Dependencies
+        run: pip install requests
+        
+      - name: Run Python Scraper
+        run: python update_news.py
+        
+      - name: Commit and Push Changes
+        run: |
+          git config --global user.name 'GitHub Action Bot'
+          git config --global user.email 'action@github.com'
+          git add pine_news_data.txt
+          git commit -m "Auto-update Forex Factory data" || echo "No changes to commit"
+          git push
+          
